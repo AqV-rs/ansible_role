@@ -1,0 +1,14 @@
+---
+- name: Config main files
+  include_tasks: "config.yml"
+- name: ACL config
+  include_tasks: "config-acl.yml"
+- name: Upstream config
+  include_tasks: "config-upstream.yml"
+- name: Site config
+  include_tasks: "config-site.yml"
+- name: Clear Site config
+  include_tasks: "config-clear.yml"
+- name: Reload nginx
+  shell: nginx -s reload
+

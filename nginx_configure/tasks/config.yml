@@ -1,0 +1,156 @@
+---
+- block:
+    - name: Template | Nginx root config
+      template:
+        src: files/etc/nginx/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        backup: true
+      become: yes
+      register: copy_result
+      notify:
+        - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  rescue:
+    - name: Restore backup
+      ansible.builtin.copy:
+       src: "{{ copy_result.backup_file }}"
+       dest: /etc/nginx/nginx.conf
+       remote_src: true
+      become: yes
+      when: copy_result.backup_file is defined
+      notify:
+         - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  always:
+    - name: Remove backup
+      ansible.builtin.file:
+        path: "{{ copy_result.backup_file }}"
+        state: absent
+      become: yes
+      when: copy_result.backup_file is defined
+
+- block:
+    - name: Template | proxy.conf
+      template:
+        src: files/etc/nginx/conf.d/proxy.conf.j2
+        dest: /etc/nginx/conf.d/proxy.conf
+        backup: true
+        owner: root
+        mode: '0644'
+      register: copy_result
+      become: yes
+      notify:
+        - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  rescue:
+    - name: Restore backup
+      ansible.builtin.copy:
+       src: "{{ copy_result.backup_file }}"
+       dest: /etc/nginx/conf.d/proxy.conf
+       owner: root
+       mode: '0644'
+       remote_src: true
+      when: copy_result.backup_file is define
+      become: yes
+      notify:
+         - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  always:
+    - name: Remove backup
+      ansible.builtin.file:
+        path: "{{ copy_result.backup_file }}"
+        state: absent
+      when: copy_result.backup_file is defined
+      become: yes
+
+- block:
+    - name: Template | http.conf
+      template:
+        src: files/etc/nginx/conf.d/http.conf.j2
+        dest: /etc/nginx/http.conf
+        backup: true
+        owner: root
+        mode: '0644'
+      register: copy_result
+      become: yes
+      notify:
+        - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  rescue:
+    - name: Restore backup
+      ansible.builtin.copy:
+       src: "{{ copy_result.backup_file }}"
+       dest: /etc/nginx/http.conf
+       owner: root
+       mode: '0644'
+       remote_src: true
+      when: copy_result.backup_file is defined
+      become: yes
+      notify:
+         - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  always:
+    - name: Remove backup
+      ansible.builtin.file:
+        path: "{{ copy_result.backup_file }}"
+        state: absent
+      when: copy_result.backup_file is defined
+      become: yes
+
+- block:
+    - name: Template | https.conf
+      template:
+        src: files/etc/nginx/conf.d/https.conf.j2
+        dest: /etc/nginx/https.conf
+        backup: true
+        owner: root
+        mode: '0644'
+      register: copy_result
+      become: yes
+      notify:
+        - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  rescue:
+    - name: Restore backup
+      ansible.builtin.copy:
+       src: "{{ copy_result.backup_file }}"
+       dest: /etc/nginx/https.conf
+       owner: root
+       mode: '0644'
+       remote_src: true
+      when: copy_result.backup_file is defined
+      become: yes
+      notify:
+         - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  always:
+    - name: Remove backup
+      ansible.builtin.file:
+        path: "{{ copy_result.backup_file }}"
+        state: absent
+      when: copy_result.backup_file is defined
+      become: yes

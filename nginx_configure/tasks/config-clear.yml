@@ -1,0 +1,63 @@
+---
+- block:
+    - name: Find all nginx config
+      find:
+        paths: /etc/nginx/conf.d/
+        file_type: file
+      register: nginx_conf_files
+
+    - name: Set PATH
+      set_fact:
+        nginx_conf_files2: []
+
+    - name: Set nginx_conf_files2 full path
+      set_fact:
+        nginx_conf_files2: "{{ nginx_conf_files2 + ['/etc/nginx/conf.d/' + item + '.conf'] }}"
+      loop: "{{ nginx_sites + nginx_exclude }}"
+
+    - name: Set list path
+      set_fact:
+        actual_paths: "{{ nginx_conf_files.files | map(attribute='path') | list }}"
+
+    - name: Find files, which are on the disk, but not in nginx_conf_files2
+      set_fact:
+        disk_only_confs: "{{ actual_paths | difference(nginx_conf_files2) }}"
+
+    - name: Pack config in tar
+      archive:
+        path: "{{ disk_only_confs }}"
+        dest: "/var/backups/nginx_conf_{{ ansible_date_time.iso8601_basic }}.tar"
+        format: tar
+      when: disk_only_confs | length > 0
+      register: nginx_backup
+
+    - name: Del config after pack tar
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ disk_only_confs }}"
+      when: disk_only_confs | length > 0
+      notify: Test Nginx
+
+    - name: Flush handlers after template apply
+      meta: flush_handlers
+
+  rescue:
+    - name: Unpack config use Tar
+      command: >
+        tar -xf {{ nginx_backup.dest }}
+        -C /etc/nginx/conf.d/
+        --strip-components=3
+      args:
+        warn: false
+      notify: Test Nginx
+  always:
+        - name: Del backup tar file
+          file:
+            path: "{{ nginx_backup.dest }}"
+            state: absent
+          when:
+            - nginx_backup is defined
+            - nginx_backup.dest is defined
+            - disk_only_confs | length > 0
+          failed_when: false

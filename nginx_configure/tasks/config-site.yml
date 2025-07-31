@@ -1,0 +1,51 @@
+---
+- name: Install nginx configs
+  block:
+
+    - name: Apply nginx templates with backup
+      template:
+        src: "{{ item }}.conf.j2"
+        dest: "/etc/nginx/conf.d/{{ item }}.conf"
+        owner: root
+        group: root
+        mode: '0644'
+        backup: true
+      loop: "{{ nginx_sites }}"
+      loop_control:
+        label: "{{ item }}"
+      register: copy_result
+      become: yes
+      notify: Test Nginx
+
+    - name: Flush handlers after template apply
+      meta: flush_handlers
+
+  rescue:
+
+    - name: Restore configs from template backup
+      copy:
+        src: "{{ item.backup_file }}"
+        dest: "/etc/nginx/conf.d/{{ item.item }}.conf"
+        remote_src: true
+      loop: "{{ copy_result.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: item.backup_file is defined
+      become: yes
+      notify: Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  always:
+
+    - name: Cleanup | Remove template backups
+      file:
+        path: "{{ item.backup_file }}"
+        state: absent
+      loop: "{{ copy_result.results }}"
+      loop_control:
+        label: "{{ item.item | default(item.dest | basename, true) }}"
+      when: item.backup_file is defined
+      become: yes
+      failed_when: false

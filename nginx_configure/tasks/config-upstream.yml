@@ -1,0 +1,38 @@
+  block:
+    - name:  Template | Nginx Upstream
+      template:
+        src: files/etc/nginx/conf.d/upstream.conf.j2
+        dest: /etc/nginx/conf.d/upstream.conf
+        owner: root
+        mode: '0644'
+        backup: true
+      register: upstream_result
+      become: yes
+      notify:
+        - Test Nginx
+
+    - name: Flush handlers after copy
+      meta: flush_handlers
+
+  rescue:
+    - name: Restore backup
+      copy:
+        src: "{{ upstream_result.backup_file }}"
+        dest: /etc/nginx/conf.d/upstream.conf
+        remote_src: true
+      when: upstream_result.backup_file is defined
+      become: yes
+      notify:
+        - Test Nginx
+
+    - name: Flush handlers after restore
+      meta: flush_handlers
+
+  always:
+    - name: Cleanup | Remove upstream.conf backup
+      file:
+        path: "{{ upstream_result.backup_file }}"
+        state: absent
+      when: upstream_result.backup_file is defined
+      become: yes
+      failed_when: false

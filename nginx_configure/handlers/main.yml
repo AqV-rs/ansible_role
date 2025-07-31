@@ -1,0 +1,4 @@
+---
+- name: Test Nginx
+  shell: nginx -t
+  become: true
