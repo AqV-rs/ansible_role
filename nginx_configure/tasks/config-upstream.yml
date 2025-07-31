@@ -1,7 +1,8 @@
+- name: Template | Upstream config with backup and rollback
   block:
     - name:  Template | Nginx Upstream
       template:
-        src: files/etc/nginx/conf.d/upstream.conf.j2
+        src: files/upstream.conf.j2
         dest: /etc/nginx/conf.d/upstream.conf
         owner: root
         mode: '0644'

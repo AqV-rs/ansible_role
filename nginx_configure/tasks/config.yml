@@ -2,7 +2,7 @@
 - block:
     - name: Template | Nginx root config
       template:
-        src: files/etc/nginx/nginx.conf.j2
+        src: files/nginx.conf.j2
         dest: /etc/nginx/nginx.conf
         backup: true
       become: yes
@@ -38,7 +38,7 @@
 - block:
     - name: Template | proxy.conf
       template:
-        src: files/etc/nginx/conf.d/proxy.conf.j2
+        src: files/proxy.conf.j2
         dest: /etc/nginx/conf.d/proxy.conf
         backup: true
         owner: root
@@ -78,7 +78,7 @@
 - block:
     - name: Template | http.conf
       template:
-        src: files/etc/nginx/conf.d/http.conf.j2
+        src: files/http.conf.j2
         dest: /etc/nginx/http.conf
         backup: true
         owner: root
@@ -118,7 +118,7 @@
 - block:
     - name: Template | https.conf
       template:
-        src: files/etc/nginx/conf.d/https.conf.j2
+        src: files/https.conf.j2
         dest: /etc/nginx/https.conf
         backup: true
         owner: root
